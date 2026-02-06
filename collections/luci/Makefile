@@ -14,7 +14,6 @@ LUCI_DESCRIPTION:=Standard OpenWrt set including package management and attended
 LUCI_DEPENDS:= \
 	+luci-light \
 	+luci-app-package-manager \
-	+luci-app-attendedsysupgrade
 
 PKG_LICENSE:=Apache-2.0
 
