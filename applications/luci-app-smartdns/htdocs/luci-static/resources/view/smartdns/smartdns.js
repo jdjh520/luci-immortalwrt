@@ -71,7 +71,7 @@ function smartdnsRenderStatus(res) {
 			var protocol = window.location.protocol;
 			var hostname = window.location.hostname;
 			var uiLink = protocol + "//" + hostname + ":" + uiPort;
-			renderHTML += "&#160; <a class=\"btn cbi-button\" style=\"margin-left: 10px; background-color: black; color: white; border-color: #333;\" href=\"" + uiLink + "\" target=\"_blank\">" + _("Open the WebUI") + "</a>";
+			renderHTML +=  '&#160; <a class="cbi-button cbi-button-positive" ' +  'href="' + uiLink + '" target="_blank">' +  _("Open the WebUI") +  '</a>';
 		}
 	} else {
 		renderHTML += "<span style=\"color:red;font-weight:bold\">SmartDNS - " + _("NOT RUNNING") + "</span>";
@@ -224,6 +224,8 @@ return view.extend({
 		o.value("ping,tcp:443,tcp:80");
 		o.value("tcp:80,tcp:443,ping");
 		o.value("tcp:443,tcp:80,ping");
+		o.value("tcp-syn:80,tcp-syn:443,ping");
+		o.value("tcp-syn:443,tcp-syn:80,ping");
 		o.value("none", _("None"));
 		o.validate = function (section_id, value) {
 			if (value == "") {
@@ -234,18 +236,27 @@ return view.extend({
 				return true;
 			}
 
-			var check_mode = value.split(",")
+			var check_mode = value.split(",");
 			for (var i = 0; i < check_mode.length; i++) {
-				if (check_mode[i] == "ping") {
+				var mode = check_mode[i];
+
+				if (mode == "ping") {
 					continue;
 				}
 
-				if (check_mode[i].indexOf("tcp:") == 0) {
-					var port = check_mode[i].split(":")[1];
-					if (port == "") {
-						return _("TCP port is empty");
-					}
+				if (mode.indexOf("tcp:") == 0) {
+				    var port = mode.split(":")[1];
+				    if (port == "") {
+				        return _("TCP port is empty");
+				    }
+					continue;
+				}
 
+				if (mode.indexOf("tcp-syn:") == 0) {
+				    var port = mode.split(":")[1];
+				    if (port == "") {
+				        return _("TCP SYN port is empty");
+				    }
 					continue;
 				}
 
@@ -300,7 +311,7 @@ return view.extend({
 		o.rempty = true;
 		o.depends('tls_server', '1');
 		o.depends('doh_server', '1');
-
+	
 		o = s.taboption("advanced", form.Value, "bind_cert_key", _("Server Cert Key"), _("Server certificate key file path."));
 		o.datatype = "string";
 		o.placeholder = "/var/etc/smartdns/smartdns/smartdns-key.pem"
@@ -417,7 +428,7 @@ return view.extend({
 
 			return true;
 		}
-
+		
 		// NFTset name;
 		o = s.taboption("advanced", form.Value, "nftset_name", _("NFTset Name"), _("NFTset name, format: [#[4|6]:[family#table#set]]"));
 		o.rmempty = true;
@@ -516,7 +527,7 @@ return view.extend({
 
 			o.value(download_files[i].name);
 		}
-
+	
 		///////////////////////////////////////
 		// second dns server;
 		///////////////////////////////////////
@@ -589,7 +600,7 @@ return view.extend({
 		o = s.taboption("seconddns", form.Flag, "seconddns_force_aaaa_soa", _("Force AAAA SOA"), _("Force AAAA SOA."));
 		o.rmempty = true;
 		o.default = o.disabled;
-
+		
 		// Force HTTPS SOA
 		o = s.taboption("seconddns", form.Flag, "seconddns_force_https_soa", _("Force HTTPS SOA"), _("Force HTTPS SOA."));
 		o.rmempty = true;
@@ -806,7 +817,7 @@ return view.extend({
 		o.default = "file";
 		o.value("file", _("file"));
 		o.value("syslog", _("syslog"));
-
+	
 		o = s.taboption("custom", form.Value, "log_size", _("Log Size"));
 		o.rmempty = true;
 		o.placeholder = "default";
@@ -1043,7 +1054,7 @@ return view.extend({
 			_("Mark this server as a fallback server, use it only when default servers fail."))
 		o.default = o.disabled
 		o.rmempty = true
-		o.modalonly = true
+		o.modalonly = true    
 
 		// other args
 		o = s.taboption("advanced", form.Value, "addition_arg", _("Additional Server Args"),
@@ -1067,7 +1078,7 @@ return view.extend({
 		o.rmempty = false;
 		o.default = o.disabled;
 
-		o = s.taboption("basic", form.DynamicList, "client_addr", _("Client Address"),
+		o = s.taboption("basic", form.DynamicList, "client_addr", _("Client Address"), 
 		_("If a client address is specified, only that client will apply this rule. You can enter an IP address, such as 1.2.3.4, or a MAC address, such as aa:bb:cc:dd:ee:ff."));
 		o.rempty = true
 		o.rmempty = true;
@@ -1088,7 +1099,7 @@ return view.extend({
 			if (value.match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)) {
 				return true;
 			}
-
+			
 			return _("Client address format error, please input ip adress or mac address.");
 		}
 
@@ -1099,7 +1110,7 @@ return view.extend({
 		o.rempty = true
 		o.modalonly = true;
 		o.root_directory = "/etc/smartdns/ip-set"
-
+		
 		o = s.taboption("basic", form.Value, "server_group", _("Server Group"), _("DNS Server group belongs to, such as office, home."))
 		o.rmempty = true
 		o.placeholder = "default"
@@ -1133,6 +1144,8 @@ return view.extend({
 		o.value("ping,tcp:443,tcp:80");
 		o.value("tcp:80,tcp:443,ping");
 		o.value("tcp:443,tcp:80,ping");
+		o.value("tcp-syn:80,tcp-syn:443,ping");
+		o.value("tcp-syn:443,tcp-syn:80,ping");
 		o.value("none", _("None"));
 		o.validate = function (section_id, value) {
 			if (value == "") {
@@ -1143,18 +1156,27 @@ return view.extend({
 				return true;
 			}
 
-			var check_mode = value.split(",")
+			var check_mode = value.split(",");
 			for (var i = 0; i < check_mode.length; i++) {
-				if (check_mode[i] == "ping") {
+				var mode = check_mode[i];
+
+				if (mode == "ping") {
 					continue;
 				}
 
-				if (check_mode[i].indexOf("tcp:") == 0) {
-					var port = check_mode[i].split(":")[1];
-					if (port == "") {
-						return _("TCP port is empty");
-					}
+				if (mode.indexOf("tcp:") == 0) {
+				    var port = mode.split(":")[1];
+				    if (port == "") {
+				        return _("TCP port is empty");
+				    }
+					continue;
+				}
 
+				if (mode.indexOf("tcp-syn:") == 0) {
+				    var port = mode.split(":")[1];
+				    if (port == "") {
+				        return _("TCP SYN port is empty");
+				    }
 					continue;
 				}
 
@@ -1199,7 +1221,7 @@ return view.extend({
 
 			return true;
 		}
-
+		
 		// NFTset name;
 		o = s.taboption("advanced", form.Value, "nftset_name", _("NFTset Name"), _("NFTset name, format: [#[4|6]:[family#table#set]]"));
 		o.rmempty = true;
@@ -1292,6 +1314,8 @@ return view.extend({
 		o.value("ping,tcp:443,tcp:80");
 		o.value("tcp:80,tcp:443,ping");
 		o.value("tcp:443,tcp:80,ping");
+		o.value("tcp-syn:80,tcp-syn:443,ping");
+		o.value("tcp-syn:443,tcp-syn:80,ping");
 		o.value("none", _("None"));
 		o.validate = function (section_id, value) {
 			if (value == "") {
@@ -1302,18 +1326,27 @@ return view.extend({
 				return true;
 			}
 
-			var check_mode = value.split(",")
+			var check_mode = value.split(",");
 			for (var i = 0; i < check_mode.length; i++) {
-				if (check_mode[i] == "ping") {
+				var mode = check_mode[i];
+
+				if (mode == "ping") {
 					continue;
 				}
 
-				if (check_mode[i].indexOf("tcp:") == 0) {
-					var port = check_mode[i].split(":")[1];
-					if (port == "") {
-						return _("TCP port is empty");
-					}
+				if (mode.indexOf("tcp:") == 0) {
+				    var port = mode.split(":")[1];
+				    if (port == "") {
+				        return _("TCP port is empty");
+				    }
+					continue;
+				}
 
+				if (mode.indexOf("tcp-syn:") == 0) {
+				    var port = mode.split(":")[1];
+				    if (port == "") {
+				        return _("TCP SYN port is empty");
+				    }
 					continue;
 				}
 
@@ -1516,6 +1549,8 @@ return view.extend({
 		so.value("ping,tcp:443,tcp:80");
 		so.value("tcp:80,tcp:443,ping");
 		so.value("tcp:443,tcp:80,ping");
+		so.value("tcp-syn:80,tcp-syn:443,ping");
+		so.value("tcp-syn:443,tcp-syn:80,ping");
 		so.value("none", _("None"));
 		so.validate = function (section_id, value) {
 			if (value == "") {
@@ -1526,18 +1561,27 @@ return view.extend({
 				return true;
 			}
 
-			var check_mode = value.split(",")
+			var check_mode = value.split(",");
 			for (var i = 0; i < check_mode.length; i++) {
-				if (check_mode[i] == "ping") {
+				var mode = check_mode[i];
+
+				if (mode == "ping") {
 					continue;
 				}
 
-				if (check_mode[i].indexOf("tcp:") == 0) {
-					var port = check_mode[i].split(":")[1];
-					if (port == "") {
-						return _("TCP port is empty");
-					}
+				if (mode.indexOf("tcp:") == 0) {
+				    var port = mode.split(":")[1];
+				    if (port == "") {
+				        return _("TCP port is empty");
+				    }
+					continue;
+				}
 
+				if (mode.indexOf("tcp-syn:") == 0) {
+				    var port = mode.split(":")[1];
+				    if (port == "") {
+				        return _("TCP SYN port is empty");
+				    }
 					continue;
 				}
 
